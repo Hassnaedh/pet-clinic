@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\PetResource\Pages;
+namespace App\Filament\Resources\AppointmentResource\Pages;
 
-use App\Filament\Resources\PetResource;
+use App\Filament\Resources\AppointmentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
-class EditPet extends EditRecord
+class EditAppointment extends EditRecord
 {
-    protected static string $resource = PetResource::class;
+    protected static string $resource = AppointmentResource::class;
 
     protected function getHeaderActions(): array
     {

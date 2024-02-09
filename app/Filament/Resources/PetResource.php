@@ -24,6 +24,10 @@ class PetResource extends Resource
     {
         return $form
             ->schema([
+
+                Forms\Components\FileUpload::make('avatar')
+                    ->image()
+                    ->imageEditor(),
                 Forms\Components\TextInput::make('name')
                     ->required(),
                 Forms\Components\DatePicker::make('date_of_birth')
@@ -32,8 +36,23 @@ class PetResource extends Resource
                 
                 Forms\Components\Select::make('type')
                     ->native(false)
-                    ->options(PetType::class)
+                    ->options(PetType::class),
                 
+                Forms\Components\Select::make('owner_id')
+                    ->relationship('owner', 'name')
+                    ->native(false)
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->required(),
+                        Forms\Components\TextInput::make('email')
+                            ->email()
+                            ->required(),
+                        Forms\Components\TextInput::make('phone')
+                            ->tel()
+                            ->required(),
+                    ]),
             ]);
     }
 
@@ -41,7 +60,25 @@ class PetResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\ImageColumn::make('avatar')
+                    ->circular(),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->sortable()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('date_of_birth')
+                    ->date('d M Y')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('owner.name')
+                    ->sortable()
+                    ->searchable(),
+
             ])
             ->filters([
                 //
