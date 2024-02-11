@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Enums\AppointmentStatus;
+
 
 class AppointmentResource extends Resource
 {
@@ -24,9 +26,19 @@ class AppointmentResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make([
+
+                    Forms\Components\Select::make('pet_id')
+                        ->relationship('pet', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+
+                    Forms\Components\TextInput::make('description'),
+
                     Forms\Components\DatePicker::make('date')
                         ->required()
                         ->native(false),
+                        
                     Forms\Components\TimePicker::make('start')
                         ->required()
                         ->seconds(false)
@@ -40,13 +52,7 @@ class AppointmentResource extends Resource
                         ->displayFormat('h:i A')
                         ->minutesStep(10),
 
-                    Forms\Components\Select::make('pet_id')
-                        ->relationship('pet', 'name')
-                        ->searchable()
-                        ->preload()
-                        ->required(),
 
-                    Forms\Components\TextInput::make('description'),
                         
 
                     
@@ -64,11 +70,26 @@ class AppointmentResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('description')
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('date')
                     ->date('d M Y')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('')
+                Tables\Columns\TextColumn::make('start')
+                    ->time('h:i A')
+                    ->label('From')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('end')
+                    ->time('h:i A')
+                    ->label('To')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->sortable(),
 
             ])
@@ -76,6 +97,22 @@ class AppointmentResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('Confirm')
+                    ->action(function (Appointment $record) {
+                        $record->status = AppointmentStatus::Confirmed;
+                        $record->save();
+                    })
+                    ->visible(fn (Appointment $record) => $record->status == AppointmentStatus::Pending)
+                    ->color('success')
+                    ->icon('heroicon-o-check'),
+                Tables\Actions\Action::make('Cancel')
+                    ->action(function (Appointment $record) {
+                        $record->status = AppointmentStatus::Canceled;
+                        $record->save();
+                    })
+                    ->visible(fn (Appointment $record) => $record->status != AppointmentStatus::Canceled)
+                    ->color('danger')
+                    ->icon('heroicon-o-x-mark'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
